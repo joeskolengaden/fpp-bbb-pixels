@@ -1,0 +1,42 @@
+{
+    "repoName": "fpp-bbb-pixels",
+    "name": "Pixel IC Support (BeagleBone)",
+    "author": "joeskolengaden",
+    "description": "Adds about 40 more pixel ICs to FPP on a BeagleBone: PRU timing presets (APA104, TM1814/TM1829/TM1914, WS2805, UCS7604, TM1903, UCS2912, TX1812 and more), a Custom timing mode for any other single-wire chip, 16-bit and 5/6-channel orders, chip-current controls and a per-port pixel-limit panel. Includes the SPIPixels clocked-chip library.",
+    "homeURL": "https://github.com/joeskolengaden/fpp-bbb-pixels",
+    "srcURL": "https://github.com/joeskolengaden/fpp-bbb-pixels.git",
+    "bugURL": "https://github.com/joeskolengaden/fpp-bbb-pixels/issues",
+    "documentation": "https://github.com/joeskolengaden/fpp-bbb-pixels#readme",
+    "allowUpdates": 1,
+    "releaseNotesStyle": "gitRelease",
+    "versions": [
+        {
+            "minFPPVersion": "5.4",
+            "maxFPPVersion": "5.99",
+            "branch": "main",
+            "sha": "",
+            "platforms": [
+                "BeagleBone Black"
+            ]
+        }
+    ],
+    "privacy": {
+        "summary": "Patches FPP's BeagleBone pixel driver and pixel-strings page to support more chips, and rebuilds two FPP libraries on install. It sends nothing off the device.",
+        "sends": [],
+        "collects": [],
+        "sensors": [],
+        "remoteAccess": "none",
+        "systemChanges": [
+            {
+                "kind": "core-settings",
+                "what": "patches FPP's BBB48String driver, PRU source, PixelString and pixel-strings page; rebuilds libfpp.so"
+            },
+            {
+                "kind": "core-settings",
+                "what": "adds a temporary swap file while compiling (removed afterwards); Uninstall restores the .orig backups"
+            }
+        ],
+        "closedCode": false,
+        "other": "The installer stops fppd for a few minutes while it recompiles, then restarts it."
+    }
+}

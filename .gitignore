@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.board/
+dist/
+# local test evidence that contains this machine's paths or a real pixel layout
+hwtest/results/config-backups/
+hwtest/results/*.log
+hwtest/results/*.err
+# unfinished experiments against FPP 10.x (their BBB48String driver is distributed under CC BY-ND: no modified copies, no patches of it)
+patch_*_10x.py
+.DS_Store

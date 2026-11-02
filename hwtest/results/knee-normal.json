@@ -1,0 +1,67 @@
+[
+  {
+    "frames": 63,
+    "dur_us": 47151.0,
+    "dur_min": 43763.9,
+    "dur_max": 47197.9,
+    "period_ms": null,
+    "key": "normal-grb",
+    "pixels": 1560,
+    "ports": 1,
+    "bytes": 4680,
+    "bits": 37440,
+    "bit_period_ns": 1259.375
+  },
+  {
+    "frames": 178,
+    "dur_us": 14177.25,
+    "dur_min": 3875.7,
+    "dur_max": 48374.9,
+    "period_ms": null,
+    "key": "normal-grb",
+    "pixels": 1600,
+    "ports": 1,
+    "bytes": 4800,
+    "bits": 38400,
+    "bit_period_ns": 369.19921875
+  },
+  {
+    "frames": 49,
+    "dur_us": 49609.85,
+    "dur_min": 49589.0,
+    "dur_max": 49649.5,
+    "period_ms": null,
+    "key": "normal-grb",
+    "pixels": 1640,
+    "ports": 1,
+    "bytes": 4920,
+    "bits": 39360,
+    "bit_period_ns": 1260.4128556910568
+  },
+  {
+    "frames": 212,
+    "dur_us": 15810.1,
+    "dur_min": 3838.3,
+    "dur_max": 48665.9,
+    "period_ms": null,
+    "key": "normal-grb",
+    "pixels": 1700,
+    "ports": 1,
+    "bytes": 5100,
+    "bits": 40800,
+    "bit_period_ns": 387.50245098039215
+  },
+  {
+    "frames": 90,
+    "dur_us": 36717.25,
+    "dur_min": 27023.0,
+    "dur_max": 49782.5,
+    "period_ms": null,
+    "key": "normal-grb",
+    "pixels": 2000,
+    "ports": 1,
+    "bytes": 6000,
+    "bits": 48000,
+    "bit_period_ns": 764.9427083333334
+  }
+]

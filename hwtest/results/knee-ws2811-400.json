@@ -1,0 +1,54 @@
+[
+  {
+    "frames": 166,
+    "dur_us": 13120.5,
+    "dur_min": 3834.6,
+    "dur_max": 47188.0,
+    "period_ms": null,
+    "key": "ws2811-400",
+    "pixels": 780,
+    "ports": 1,
+    "bytes": 2340,
+    "bits": 18720,
+    "bit_period_ns": 700.8814102564103
+  },
+  {
+    "frames": 61,
+    "dur_us": 49605.0,
+    "dur_min": 49582.4,
+    "dur_max": 49614.3,
+    "period_ms": null,
+    "key": "ws2811-400",
+    "pixels": 820,
+    "ports": 1,
+    "bytes": 2460,
+    "bits": 19680,
+    "bit_period_ns": 2520.579268292683
+  },
+  {
+    "frames": 204,
+    "dur_us": 10782.0,
+    "dur_min": 3848.1,
+    "dur_max": 49917.1,
+    "period_ms": null,
+    "key": "ws2811-400",
+    "pixels": 860,
+    "ports": 1,
+    "bytes": 2580,
+    "bits": 20640,
+    "bit_period_ns": 522.3837209302326
+  },
+  {
+    "frames": 86,
+    "dur_us": 39785.8,
+    "dur_min": 31195.0,
+    "dur_max": 49923.2,
+    "period_ms": null,
+    "key": "ws2811-400",
+    "pixels": 900,
+    "ports": 1,
+    "bytes": 2700,
+    "bits": 21600,
+    "bit_period_ns": 1841.9351851851852
+  }
+]

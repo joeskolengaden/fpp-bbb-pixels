@@ -1,0 +1,17 @@
+fpp-bbb-pixels - extra pixel-IC support for Falcon Player (FPP) on BeagleBone
+Copyright (C) 2026 joeskolengaden and contributors. Licensed under the GNU General Public License, version 2 (see LICENSE).
+
+What this repository contains
+  * Patch scripts (patch_*.py), a few small C++ include files and a JavaScript/PHP page extension. They add code to FPP 5.x files at install
+    time. This repository does NOT contain copies of FPP's own source files: the patchers match anchors in the installed FPP and insert our
+    additions, so FPP's files stay under FPP's licence (GPL v2 for the 5.x files this targets).
+  * FPP 10.x and newer distribute their BeagleBone pixel driver under CC BY-ND 4.0 (no derivative works may be distributed). This project
+    therefore supports FPP 5.x only and ships no modified copy or patch of those files.
+  * SPIPixels/ - an FPP channel-output plugin for clocked pixel chips (GPL v2).
+  * hwtest/ - measurement tools used to verify the work; research/ - datasheet research notes with their sources.
+
+Third-party references (not included, used only to cross-check timing and frames)
+  FastLED (MIT), NeoPixelBus (LGPL v3), Adafruit NeoPixel (LGPL v3), WLED (EUPL), chip manufacturers' public datasheets.
+  Chip and product names belong to their owners and are used only to say what the software works with.
+
+Falcon Player: https://github.com/FalconChristmas/fpp (GPL v2). This project is not affiliated with or endorsed by the FPP developers.

@@ -1,0 +1,54 @@
+[
+  {
+    "frames": 79,
+    "dur_us": 7983.2,
+    "dur_min": 4346.2,
+    "dur_max": 10760.8,
+    "period_ms": null,
+    "key": "normal-grb",
+    "pixels": 400,
+    "ports": 48,
+    "bytes": 1200,
+    "bits": 9600,
+    "bit_period_ns": 831.5833333333334
+  },
+  {
+    "frames": 88,
+    "dur_us": 21507.1,
+    "dur_min": 18809.0,
+    "dur_max": 26362.8,
+    "period_ms": null,
+    "key": "normal-grb",
+    "pixels": 1000,
+    "ports": 48,
+    "bytes": 3000,
+    "bits": 24000,
+    "bit_period_ns": 896.1291666666667
+  },
+  {
+    "frames": 186,
+    "dur_us": 6713.5,
+    "dur_min": 3880.3,
+    "dur_max": 37743.9,
+    "period_ms": null,
+    "key": "normal-grb",
+    "pixels": 1500,
+    "ports": 48,
+    "bytes": 4500,
+    "bits": 36000,
+    "bit_period_ns": 186.48611111111111
+  },
+  {
+    "frames": 150,
+    "dur_us": 29329.5,
+    "dur_min": 8757.3,
+    "dur_max": 38505.0,
+    "period_ms": null,
+    "key": "normal-grb",
+    "pixels": 1600,
+    "ports": 48,
+    "bytes": 4800,
+    "bits": 38400,
+    "bit_period_ns": 763.7890625
+  }
+]

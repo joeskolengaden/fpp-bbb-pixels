@@ -1,0 +1,39 @@
+name: release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: FalconChristmas/fpp
+          ref: 5.4.1
+          path: fpp-stock
+      - name: Tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq nodejs php-cli g++ python3-pip
+          pip install --quiet jsonschema
+          curl -fsSL -o /tmp/pluginInfo.schema.json https://raw.githubusercontent.com/FalconChristmas/fpp-plugin-Template/master/pluginInfo.schema.json
+      - name: The tag must match VERSION
+        run: test "v$(cat VERSION)" = "${GITHUB_REF_NAME}"
+      - name: Every check
+        run: FPP_SRC="$PWD/fpp-stock" FBP_SCHEMA=/tmp/pluginInfo.schema.json bash scripts/check-all.sh
+      - name: Build the bundle
+        run: |
+          git config user.name ci && git config user.email ci@example.invalid
+          rm -rf fpp-stock && bash scripts/build-release.sh
+      - name: Release notes from CHANGELOG.md
+        run: |
+          V="$(cat VERSION)"
+          awk -v v="$V" '$0 ~ "^## "v" " {f=1; next} /^## / {f=0} f' CHANGELOG.md > /tmp/notes.md
+          { echo; echo "### Install"; echo '- **Plugin Manager** (FPP 5.4, BeagleBone): Content Setup > Plugins > paste `https://raw.githubusercontent.com/joeskolengaden/fpp-bbb-pixels/main/pluginInfo.json` > Install.'; echo "- **Offline / by hand:** download \`fpp-bbb-pixels-$V.tar.gz\` and \`SHA256SUMS\`, check the sum, copy to the board, \`sudo bash install.sh\` (see INSTALL.md)."; } >> /tmp/notes.md
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" dist/* --title "fpp-bbb-pixels ${GITHUB_REF_NAME}" --notes-file /tmp/notes.md
