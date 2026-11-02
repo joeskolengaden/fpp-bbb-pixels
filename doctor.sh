@@ -152,6 +152,10 @@ read -r _ _ avail _ < <(grep -E '^MemAvailable' /proc/meminfo | tr -s ' ' ' ' | 
 [ -f "$CFG.preset-test.bak" ] && warn "leftover $CFG.preset-test.bak from a test run (safe to delete)"
 [ -f /home/fpp/media/config/co-other.json.spitest.bak ] && warn "leftover co-other.json.spitest.bak from a test run (safe to delete)"
 
+if python3 -c "import json,sys; d=json.load(open('/home/fpp/media/config/ci-universes.json')); sys.exit(0 if any(u.get('active') for c in d.get('channelInputs',[]) if c.get('enabled',1) for u in c.get('universes',[])) else 1)" 2>/dev/null; then
+  RB=$(cat /proc/sys/net/core/rmem_default 2>/dev/null || echo 0)
+  [ "$RB" -ge 1048576 ] && ok "streamed input configured; UDP receive buffer $((RB/1024)) KB" || warn "streamed input (sACN/ArtNet) is configured but the UDP receive buffer is only $((RB/1024)) KB: a big stream can overflow it (sudo bash system-fixes.sh --apply)"
+fi
 FU=$(systemctl --failed --no-legend 2>/dev/null | awk '{print $1}' | tr '\n' ' ')
 [ -z "$FU" ] && ok "no failed system services" || warn "failed system services: $FU (see: sudo bash system-fixes.sh --check)"
 [ -x /usr/local/sbin/fbp-clock ] && ok "clock persists across reboots (fbp-clock)" || warn "clock is not saved across reboots - this board has no RTC, so it will start in the past after a power cycle (sudo bash system-fixes.sh --apply)"

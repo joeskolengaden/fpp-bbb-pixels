@@ -19,6 +19,9 @@ First versioned release: everything built and verified on a BeagleBone Green run
 - `doctor.sh` health check (patch state, frame budget, output-thread budget rule, clock, services), `system-fixes.sh` (clock persistence for boards without an RTC), start-up guard that warns when an FPP upgrade removed the patches.
 - Installer is all-or-nothing: validates every patch anchor on copies first, rolls back to stock if the rebuild fails.
 
+### Streaming (sACN / ArtNet / DDP)
+- Measured the board's own packet-processing limits (see PERFORMANCE.md); `system-fixes.sh` can raise the UDP receive buffer to 2 MB (removed every socket drop in the stress test), `doctor.sh` warns when streaming is configured with the small default.
+
 ### Measured limits (see PERFORMANCE.md)
 - 48 ports x 1,650 pixels at 20 fps and 48 x 830 at 40 fps (Normal timing) hold with fppd at 12-17% CPU; wire time, not CPU, is the limit.
 - 8-minute soak, 8 fppd restarts and a hard kill all clean.

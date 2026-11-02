@@ -121,6 +121,20 @@ if [ "$MODE" = --apply ]; then
 fi
 if [ "$MODE" = --undo ]; then rm -rf $GETTY_D; systemctl daemon-reload; echo "  USB console drop-in removed"; fi
 
+echo "== 4. UDP receive buffers (only matters when you stream sACN / ArtNet / DDP into the board) =="
+SYSCTL_F=/etc/sysctl.d/90-fbp-udp.conf; WANT=2097152
+CUR=$(cat /proc/sys/net/core/rmem_default 2>/dev/null || echo 0)
+if [ -f $SYSCTL_F ] && [ "$CUR" -ge "$WANT" ]; then ok "receive buffer default $CUR bytes (stress test: 192 KB dropped packets at ~9,000 packets/s, 2 MB dropped none)"
+else todo "UDP receive buffer is $CUR bytes: sACN/ArtNet at full-board rates (~9,000 packets/s) overflowed it; 2 MB removed every drop"; fi
+if [ "$MODE" = --apply ]; then
+  printf '# fpp-bbb-pixels: bigger UDP receive buffers for streamed input. previous: %s %s\nnet.core.rmem_default=%s\nnet.core.rmem_max=%s\n' "$CUR" "$(cat /proc/sys/net/core/rmem_max)" "$WANT" "$((WANT*2))" > $SYSCTL_F
+  sysctl -q -p $SYSCTL_F && echo "  UDP receive buffer set to $WANT bytes (restart FPPD so its sockets use it)"
+fi
+if [ "$MODE" = --undo ] && [ -f $SYSCTL_F ]; then
+  prev=$(sed -n 's/^# .*previous: \([0-9]*\) \([0-9]*\)$/\1 \2/p' $SYSCTL_F); rm -f $SYSCTL_F
+  [ -n "$prev" ] && sysctl -q -w net.core.rmem_default=${prev% *} net.core.rmem_max=${prev#* }; echo "  UDP receive buffer back to ${prev:-the kernel default}"
+fi
+
 echo
 if [ "$MODE" = --check ]; then
   [ "$PENDING" = 0 ] && echo "system-fixes: nothing to do" || echo "system-fixes: $PENDING item(s) can be fixed - run: sudo bash system-fixes.sh --apply --set-time \$(date -u +%s)  (from a machine with the right time)"

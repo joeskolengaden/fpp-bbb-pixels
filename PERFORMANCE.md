@@ -232,3 +232,23 @@ and unrolling.
 | 5 | **Stable under load and abuse**: 8 minutes at 48 x 1,500 px with no missed window and flat memory; 8 fppd restarts with the full config all clean (~12 s each); fppd comes back by itself ~6 s after a `kill -9`. | `results/stress.log`, `results/stress-c.log` |
 
 Not measured: SoC temperature (this kernel exposes no thermal sensor), and stress per individual IC (the stress runs used stock Normal timing and the 16-bit RGBWC data path; every other chip shares one of these data paths and the same wire time per byte).
+
+## Streaming input (sACN / ArtNet / DDP into the board)
+
+Streaming does not change how many pixels a port can drive (wire time, above). It adds a **network** and a **packet-processing** limit. Measured with `hwtest/stream_test2.py`: the frames
+are replayed on the board itself, paced like a 100 Mbit wire, so the numbers are fppd's own capacity (a Mac's USB-Ethernet adapter silently drops packets sent in tight bursts, so a
+laptop on a USB adapter must pace its output; a real Ethernet NIC adds some interrupt CPU that loopback does not). 510 channels per universe, 1,440 per DDP packet.
+
+| Stream | Packets/s | Default 192 KB socket buffer | With a 2 MB buffer (`system-fixes.sh --apply`) |
+|---|---|---|---|
+| Your layout (16,320 px = 48,960 ch), sACN or ArtNet, 20 / 40 / 80 fps | 1,900 / 3,800 / 7,700 | no loss; fppd 10% / 20% / 37% CPU | no loss up to the ~9,000 packets/s the test could send; fppd up to 48% |
+| Your layout, DDP, 20 / 40 / 80 / 160 fps | 680 / 1,360 / 2,720 / 5,400 | no loss | no loss; fppd 8% / 14% / 26% / 49% CPU |
+| Full board (48 x 1,650 px = 237,600 ch), sACN or ArtNet, 20 fps | 9,300 | **0.1-0.2% of packets lost** (86-143 per 8 s: socket buffer overflow) | no drops; fppd 40-43% CPU, but 2-4 "SLOW output" warnings per 8 s: at the limit |
+| Full board, DDP, 20 fps | 3,300 | no loss; fppd 27% | no loss; 2 SLOW warnings per 8 s |
+
+Rules from this:
+1. **Use DDP for big layouts**: the same data needs about a third of the packets and CPU of sACN/ArtNet (1,440 vs 510 channels per packet).
+2. **Raise the UDP receive buffer** when you stream a large layout (`sudo bash system-fixes.sh --apply`, then restart FPPD): it removed every socket drop. `doctor.sh` warns when streamed input is configured and the buffer is small.
+3. **Stream at the same rate as the output.** At full board load the single core is saturated (fppd 40% + the stream); sACN/ArtNet at 9,300 packets/s on a 20 fps full-board show is the practical ceiling.
+4. **Network**: a full-board sACN stream is about 52 Mbit/s (ArtNet 44, DDP 40): half of a 100 Mbit link. Use wired Ethernet and unicast; Wi-Fi and multicast over Wi-Fi lose packets.
+5. The board's pixel config and input-universe config were restored byte-for-byte after every run.
