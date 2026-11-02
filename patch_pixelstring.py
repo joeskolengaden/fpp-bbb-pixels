@@ -28,6 +28,25 @@
 #
 # Rebuild libfpp.so after. Anchors match FPP 5.x. Aborts (no partial edit) on mismatch.
 import sys
+
+def _atomic_write(path, data):
+    """write to a temp file, then rename over the target: a crash (this board has random ones) can never leave a half-written FPP file"""
+    import os as _os
+    tmp = path + ".fbp-tmp"
+    try:
+        st = _os.stat(path)
+    except OSError:
+        st = None
+    with open(tmp, "w") as f:
+        f.write(data); f.flush(); _os.fsync(f.fileno())
+    if st is not None:
+        _os.chmod(tmp, st.st_mode & 0o7777)
+        try:
+            _os.chown(tmp, st.st_uid, st.st_gid)
+        except OSError:
+            pass
+    _os.replace(tmp, path)
+
 P = sys.argv[1] if len(sys.argv) > 1 else "/opt/fpp/src/channeloutput/PixelString.cpp"
 s = open(P).read()
 changed = False
@@ -488,5 +507,5 @@ else:
         } else if (preambleProfile == "ucs7604") {""", "TM1908 preamble")
 
 if changed:
-    open(P, "w").write(s)
+    _atomic_write(P, s)
 print("  PixelString: done")

@@ -17,6 +17,25 @@
 #      the configuration can sustain (a faster sequence silently cuts the end of the longest strings off)
 # Rebuild libfpp-co-BBB48String.so after. FPP 5.x anchors; aborts on mismatch.
 import os, re, sys
+
+def _atomic_write(path, data):
+    """write to a temp file, then rename over the target: a crash (this board has random ones) can never leave a half-written FPP file"""
+    import os as _os
+    tmp = path + ".fbp-tmp"
+    try:
+        st = _os.stat(path)
+    except OSError:
+        st = None
+    with open(tmp, "w") as f:
+        f.write(data); f.flush(); _os.fsync(f.fileno())
+    if st is not None:
+        _os.chmod(tmp, st.st_mode & 0o7777)
+        try:
+            _os.chown(tmp, st.st_uid, st.st_gid)
+        except OSError:
+            pass
+    _os.replace(tmp, path)
+
 P = sys.argv[1] if len(sys.argv) > 1 else "/opt/fpp/src/channeloutput/BBB48String.cpp"
 s = open(P).read()
 changed = False
@@ -268,5 +287,5 @@ else:
          '            case 10: s["preambleProfile"] = "ucs7604"; break;\n            case 16: s["preambleProfile"] = "tm1908"; break;\n', "TM1908 preamble flag")
 
 if changed:
-    open(P, "w").write(s)
+    _atomic_write(P, s)
 print("  BBB48String: done")

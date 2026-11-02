@@ -63,6 +63,8 @@ assert 'trap \'rollback' not in tail, "rollback trap re-armed after success"
 PY
 grep -q "rm -f /home/fpp/media/config/fbp-version" install.sh && ok "rollback removes the version stamp" || bad "rollback leaves a stale version stamp"
 
+bash tests/test_installer_retry.sh >/tmp/fbp_t3.out 2>&1 && ok "installer retries a crashed Python step, never a real failure" || { bad "installer retry"; cat /tmp/fbp_t3.out; }
+
 step "start-up guard and health-check rule"
 bash tests/test_prestart.sh >/tmp/fbp_t1.out 2>&1 && ok "preStart.sh guard (6 cases)" || { bad "preStart.sh guard"; cat /tmp/fbp_t1.out; }
 python3 tests/test_doctor_rule.py >/tmp/fbp_t2.out 2>&1 && ok "output-thread budget rule reproduces the stress measurements" || { bad "doctor rule"; cat /tmp/fbp_t2.out; }

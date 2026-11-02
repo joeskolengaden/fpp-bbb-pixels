@@ -9,6 +9,25 @@
 # Idempotent. Anchors match FPP 5.x. Runtime-compiled by fppd (no rebuild needed
 # for the asm itself; BBB48String.cpp maps pixelTiming -> the -D flags).
 import re, sys
+
+def _atomic_write(path, data):
+    """write to a temp file, then rename over the target: a crash (this board has random ones) can never leave a half-written FPP file"""
+    import os as _os
+    tmp = path + ".fbp-tmp"
+    try:
+        st = _os.stat(path)
+    except OSError:
+        st = None
+    with open(tmp, "w") as f:
+        f.write(data); f.flush(); _os.fsync(f.fileno())
+    if st is not None:
+        _os.chmod(tmp, st.st_mode & 0o7777)
+        try:
+            _os.chown(tmp, st.st_uid, st.st_gid)
+        except OSError:
+            pass
+    _os.replace(tmp, path)
+
 A = sys.argv[1] if len(sys.argv) > 1 else "/opt/fpp/src/pru/FalconWS281x.asm"
 s = open(A).read()
 
@@ -100,7 +119,7 @@ if "PIXELTYPE_TM1814" in s and "#undef GPIO_SETDATAOUT" not in s:
 else:
     print("  asm invert: already present")
 
-open(A, "w").write(s)
+_atomic_write(A, s)
 
 # 3) user-defined "Custom" timing (pixelTiming 11): BBB48String passes -DPIXELTYPE_CUSTOM -DCUSTOM_T0/T1/LOW (ns, already
 #    compensated for the PRU overhead) and -DSLOW_WAITNS when a wait exceeds the 8-bit immediate (1275 ns); -DCUSTOM_INVERT
@@ -119,5 +138,5 @@ old_inv = "#if defined(PIXELTYPE_TM1814) || defined(PIXELTYPE_TM1829) || defined
 if "CUSTOM_INVERT" not in s and old_inv in s:
     s = s.replace(old_inv, "#if defined(PIXELTYPE_TM1814) || defined(PIXELTYPE_TM1829) || defined(PIXELTYPE_TM1914) || defined(CUSTOM_INVERT)\n")
     print("  asm custom invert: added")
-open(A, "w").write(s)
+_atomic_write(A, s)
 print("  asm: done")

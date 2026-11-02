@@ -8,6 +8,25 @@
 # either way) but it floods the log, burns CPU and disk, and hides real errors.
 # Fix: `?? null` -- identical result, no notice. Idempotent. Usage: patch_php_notices.py <php file> [<php file> ...]
 import re, sys
+
+def _atomic_write(path, data):
+    """write to a temp file, then rename over the target: a crash (this board has random ones) can never leave a half-written FPP file"""
+    import os as _os
+    tmp = path + ".fbp-tmp"
+    try:
+        st = _os.stat(path)
+    except OSError:
+        st = None
+    with open(tmp, "w") as f:
+        f.write(data); f.flush(); _os.fsync(f.fileno())
+    if st is not None:
+        _os.chmod(tmp, st.st_mode & 0o7777)
+        try:
+            _os.chown(tmp, st.st_uid, st.st_gid)
+        except OSError:
+            pass
+    _os.replace(tmp, path)
+
 PAT = re.compile(r"(\$json\['(?:channelRanges|majorVersion|minorVersion|typeId)'\])(\s*;)")
 total = 0
 for path in sys.argv[1:] or ["/opt/fpp/www/api/controllers/system.php", "/opt/fpp/www/fppjson.php"]:
@@ -16,7 +35,7 @@ for path in sys.argv[1:] or ["/opt/fpp/www/api/controllers/system.php", "/opt/fp
     if n == 0:
         print("  php notices: %s already patched (or no such reads)" % path)
         continue
-    open(path, "w").write(new)
+    _atomic_write(path, new)
     total += n
     print("  php notices: %s - guarded %d reads" % (path, n))
 print("  php notices: done")

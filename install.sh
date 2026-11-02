@@ -41,6 +41,9 @@ done
 
 say(){ echo "== $* =="; }
 die(){ echo "ERROR: $*" >&2; exit 1; }
+# Run a Python patcher. A normal failure (anchors do not match: exit 1) is final. A crash by signal (exit >= 128; this board crashes randomly now and then,
+# like its compiler does) is retried up to 3 times: every patcher is idempotent and writes its file atomically.
+py(){ local rc=0 t; for t in 1 2 3; do python3 "$@" && return 0; rc=$?; [ "$rc" -lt 128 ] && return "$rc"; echo "  (python crashed with signal $((rc-128)); retry $t/3)" >&2; sleep 2; done; return "$rc"; }
 
 # ---- 0. preflight (environment) -----------------------------------------
 say "preflight"
@@ -86,14 +89,14 @@ case "$VER" in *v5.*) : ;; *) echo "  WARN: single-wire patchers target FPP 5.x;
 say "validating patch anchors (dry-run on copies)"
 T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
 cp "$ASM" "$T/a"; cp "$CPP" "$T/c"; cp "$PS" "$T/p"; cp "$PHP" "$T/u"
-python3 "$HERE/patch_asm.py"         "$T/a" >/dev/null || die "asm anchors don't match this FPP version - aborting (no changes made)"
-python3 "$HERE/patch_bbb48string.py" "$T/c" >/dev/null || die "BBB48String anchors don't match - aborting"
-python3 "$HERE/patch_pixelstring.py" "$T/p" >/dev/null || die "PixelString anchors don't match - aborting"
-python3 "$HERE/patch_ui.py"          "$T/u" >/dev/null || die "co-pixelStrings.php anchors don't match - aborting"
+py "$HERE/patch_asm.py"         "$T/a" >/dev/null || die "asm anchors don't match this FPP version - aborting (no changes made)"
+py "$HERE/patch_bbb48string.py" "$T/c" >/dev/null || die "BBB48String anchors don't match - aborting"
+py "$HERE/patch_pixelstring.py" "$T/p" >/dev/null || die "PixelString anchors don't match - aborting"
+py "$HERE/patch_ui.py"          "$T/u" >/dev/null || die "co-pixelStrings.php anchors don't match - aborting"
 php -l "$T/u" >/dev/null || die "patched PHP fails lint - aborting"
 for f in $APIPHP; do
   [ -f "$f" ] || continue
-  cp "$f" "$T/n"; python3 "$HERE/patch_php_notices.py" "$T/n" >/dev/null || die "$f: notice-guard patch failed - aborting"
+  cp "$f" "$T/n"; py "$HERE/patch_php_notices.py" "$T/n" >/dev/null || die "$f: notice-guard patch failed - aborting"
   php -l "$T/n" >/dev/null || die "$f: patched PHP fails lint - aborting"
 done
 echo "  all anchors OK - safe to apply"
@@ -108,9 +111,9 @@ done
 
 # ---- 2. apply patches ----------------------------------------------------
 say "patch"
-python3 "$HERE/patch_asm.py" "$ASM"; python3 "$HERE/patch_bbb48string.py" "$CPP"
-python3 "$HERE/patch_pixelstring.py" "$PS"; python3 "$HERE/patch_ui.py" "$PHP"
-for f in $APIPHP; do [ -f "$f" ] && python3 "$HERE/patch_php_notices.py" "$f"; done
+py "$HERE/patch_asm.py" "$ASM"; py "$HERE/patch_bbb48string.py" "$CPP"
+py "$HERE/patch_pixelstring.py" "$PS"; py "$HERE/patch_ui.py" "$PHP"
+for f in $APIPHP; do [ -f "$f" ] && py "$HERE/patch_php_notices.py" "$f"; done
 
 # ---- 3. rebuild (with auto-rollback on failure) --------------------------
 ADDED_SWAP=0; ADDED_ZRAM=0
