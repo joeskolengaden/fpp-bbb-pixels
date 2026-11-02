@@ -132,16 +132,9 @@ for f in $APIPHP; do [ -f "$f" ] && py "$HERE/patch_php_notices.py" "$f"; done
 # ---- 3. rebuild (with auto-rollback on failure) --------------------------
 ADDED_SWAP=0; ADDED_ZRAM=0
 # Best-effort compressed-RAM swap on top of the swapfile (never fatal).
-setup_zram(){
-  modprobe zram num_devices=1 2>/dev/null || return 0
-  [ -e /sys/block/zram0/disksize ] || return 0
-  if grep -q '^/dev/zram0 ' /proc/swaps; then ADDED_ZRAM=1; echo "  zram swap already active (will be torn down at the end)"; return 0; fi
-  if [ "$(cat /sys/block/zram0/disksize)" != 0 ]; then echo 1 > /sys/block/zram0/reset 2>/dev/null || return 0; fi
-  echo 192M > /sys/block/zram0/disksize || return 0
-  mkswap /dev/zram0 >/dev/null 2>&1 || return 0
-  swapon -p 100 /dev/zram0 2>/dev/null || return 0
-  ADDED_ZRAM=1; echo "  zram swap 192MB enabled"
-}
+# zram swap is deliberately NOT used any more: on 2026-11-02 a BeagleBone Green running the 4.19 kernel developed heap corruption in unrelated processes
+# (python, php, sshd) after repeated zram setup/teardown cycles by this installer. The plain swap file below is enough for the compile.
+setup_zram(){ return 0; }
 teardown_swap(){
   [ "$ADDED_ZRAM" = 1 ] && { swapoff /dev/zram0 2>/dev/null || true; echo 1 > /sys/block/zram0/reset 2>/dev/null || true; }
   [ "$ADDED_SWAP" = 1 ] && { swapoff /swapfile 2>/dev/null || true; rm -f /swapfile; }
