@@ -133,6 +133,7 @@ teardown_swap(){
 rollback(){
   set +e   # every restore step must run, whatever fails
   echo "!! build failed - rolling back to stock" >&2
+  rm -f /home/fpp/media/config/fbp-version
   for f in "$SRC/libfpp.so" "$SRC/libfpp-co-BBB48String.so" "$ASM" "$CPP" "$PS" "$PHP"; do
     [ -f "$f.orig" ] && cp -f "$f.orig" "$f"; done
   systemctl start fppd 2>/dev/null || true
@@ -184,7 +185,8 @@ done
 # ---- 5. restart + validate ----------------------------------------------
 systemctl start fppd; sleep 10
 teardown_swap
-trap 'rm -rf "$T"' EXIT   # clear ERR trap; rebuild succeeded
+trap - ERR                  # the rebuild succeeded: from here on a failing command must NOT roll the install back
+trap 'rm -rf "$T"' EXIT
 PID=$(pgrep -n fppd || true)
 [ -n "$PID" ] || die "fppd did not start - check logs; run uninstall.sh to revert"
 say "validate"
@@ -193,7 +195,8 @@ php -l "$PHP" >/dev/null && echo "  php OK"
 echo "  fppd up (pid $PID)"
 VER_FBP=$(cat "$HERE/VERSION" 2>/dev/null || echo unknown)
 COMMIT_FBP=$(git -C "$HERE" rev-parse --short HEAD 2>/dev/null || echo "-")
-printf 'fbp_version=%s\nfbp_commit=%s\ninstalled=%s\nfpp=%s\n' "$VER_FBP" "$COMMIT_FBP" "$(date '+%F %T')" "$(cat /opt/fpp/www/.version 2>/dev/null; cat /etc/fpp/rfs_version 2>/dev/null)" > /home/fpp/media/config/fbp-version
+FPPV=$(curl -s -m5 localhost/api/fppd/version 2>/dev/null | python3 -c 'import sys,json;print(json.load(sys.stdin)["version"])' 2>/dev/null || echo unknown)
+{ printf 'fbp_version=%s\nfbp_commit=%s\ninstalled=%s\nfpp=%s\n' "$VER_FBP" "$COMMIT_FBP" "$(date '+%F %T')" "$FPPV" > /home/fpp/media/config/fbp-version; } 2>/dev/null || true
 chown fpp:fpp /home/fpp/media/config/fbp-version 2>/dev/null || true
 echo "  fpp-bbb-pixels $VER_FBP ($COMMIT_FBP) recorded in /home/fpp/media/config/fbp-version"
 if [ "$RUN_TEST" = 1 ]; then say "self-test"; bash "$HERE/selftest.sh" || echo "  (self-test reported issues - see above)"; fi

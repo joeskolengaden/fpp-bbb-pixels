@@ -51,6 +51,18 @@ if [ -d "$SPI/src" ] && command -v c++ >/dev/null; then
   rm -rf "$T"
 else skip "SPIPixels source or a C++ compiler not found"; fi
 
+step "installer safety"
+# After a successful rebuild the rollback (ERR) trap must be cleared: a harmless failing command later in the script once rolled a good install back.
+python3 - <<'PY' && ok "ERR trap is cleared right after the rebuild succeeds, before anything else can fail" || bad "install.sh: ERR trap not cleared after the rebuild"
+s = open("install.sh").read()
+i = s.index('echo "  rebuilt libfpp.so + libfpp-co-BBB48String.so"'); j = s.index("trap - ERR")
+assert j > i, "trap - ERR must come after the rebuild"
+tail = s[j:]
+assert "set -Eeuo pipefail" in s and "systemctl start fppd; sleep 10" in s[i:j], "expected structure changed"
+assert 'trap \'rollback' not in tail, "rollback trap re-armed after success"
+PY
+grep -q "rm -f /home/fpp/media/config/fbp-version" install.sh && ok "rollback removes the version stamp" || bad "rollback leaves a stale version stamp"
+
 step "start-up guard and health-check rule"
 bash tests/test_prestart.sh >/tmp/fbp_t1.out 2>&1 && ok "preStart.sh guard (6 cases)" || { bad "preStart.sh guard"; cat /tmp/fbp_t1.out; }
 python3 tests/test_doctor_rule.py >/tmp/fbp_t2.out 2>&1 && ok "output-thread budget rule reproduces the stress measurements" || { bad "doctor rule"; cat /tmp/fbp_t2.out; }
