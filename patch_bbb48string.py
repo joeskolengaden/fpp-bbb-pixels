@@ -263,7 +263,7 @@ else:
         s = s.replace('        int bitV = 0;\n', '        int bitV;\n', 1)
         s = s.replace('        int longest', '        int cT0, cT1, cLOW, cInv;\n        bitV = fbpCustomDefines(pt, config, cT0, cT1, cLOW, cInv) ? cLOW + 110 : bitNs[pt];\n        int longest', 1)
     if "int bitV2 =" not in s and "int bitV2;" not in s:
-        s = s.replace('        if (pt2 < 0 || pt2 > 10) pt2 = 0;\n', '        if (pt2 < 0 || pt2 > 10) pt2 = 0;\n        int cT02, cT12, cLOW2, cInv2;\n        int bitV2 = fbpCustomDefines(pt2, config, cT02, cT12, cLOW2, cInv2) ? cLOW2 + 110 : bitNs2[pt2];\n', 1)
+        s = s.replace('        if (pt2 < 0 || pt2 > 10) pt2 = 0;\n', '        if (pt2 < 0 || pt2 > 10) pt2 = 0;\n        int bitV2 = fbpCustomDefines(pt2, config, cT02, cT12, cLOW2, cInv2) ? cLOW2 + 110 : bitNs2[pt2];\n', 1)
         s = s.replace('double ms = bytes * 8.0 * bitNs2[pt2] / 1000000.0;', 'double ms = bytes * 8.0 * bitV2 / 1000000.0;', 1)
     n = 0
     s, k = re.subn(r'if \(pt < 0 \|\| pt > 1[01]\) pt = 0;', 'if (pt < 0 || pt > 18) pt = 0;', s); n += k

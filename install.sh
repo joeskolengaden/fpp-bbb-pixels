@@ -99,6 +99,20 @@ for f in $APIPHP; do
   cp "$f" "$T/n"; py "$HERE/patch_php_notices.py" "$T/n" >/dev/null || die "$f: notice-guard patch failed - aborting"
   php -l "$T/n" >/dev/null || die "$f: patched PHP fails lint - aborting"
 done
+# The patched C++ must also COMPILE before anything on this system is touched (a patch can match its anchors and still be invalid C++).
+# The patched copy is parsed (-fsyntax-only, no object written) next to the real file so FPP's relative includes resolve. FBP_SKIP_SYNTAX=1 skips it.
+syntax_check(){ # syntax_check <target.so> <rel/path/File.cpp> <patched copy>
+  local tgt="$1" cpp="$2" copy="$3" cc tmp
+  cc=$(cd "$SRC" && make -n -W "$cpp" "$tgt" 2>/dev/null | grep -F -- " -c " | grep -F -- "$(basename "$cpp")" | head -1 | sed 's/^ccache //') || true
+  [ -n "$cc" ] || { echo "  (cannot extract the compile command for $cpp: syntax check skipped)"; return 0; }
+  tmp="$SRC/${cpp%.cpp}.fbpcheck.cpp"; cp "$copy" "$tmp"
+  cc=$(echo "$cc" | sed -e "s# -o [^ ]*\.o# -o /dev/null#" -e "s# -c # -fsyntax-only -c #" -e "s#[^ ]*$(basename "$cpp")#$tmp#")
+  if ( cd "$SRC" && env CCACHE_DISABLE=1 bash -c "$cc" >"$T/syntax.log" 2>&1 ); then rm -f "$tmp"; echo "  $(basename "$cpp"): patched source compiles (syntax check)"
+  else rm -f "$tmp"; head -12 "$T/syntax.log" >&2; die "the patched $(basename "$cpp") does not compile - aborting (no changes made)"; fi; }
+if [ "${FBP_SKIP_SYNTAX:-0}" != 1 ]; then
+  syntax_check libfpp-co-BBB48String.so channeloutput/BBB48String.cpp "$T/c"
+  syntax_check libfpp.so channeloutput/PixelString.cpp "$T/p"
+fi
 echo "  all anchors OK - safe to apply"
 if [ "$CHECK_ONLY" = 1 ]; then say "check only - nothing was changed"; exit 0; fi
 
@@ -142,6 +156,7 @@ rollback(){
   systemctl start fppd 2>/dev/null || true
   teardown_swap
   echo "!! restored. fix the error and re-run." >&2
+  exit 1     # set +e above would otherwise let the script carry on and report success after a rollback
 }
 trap 'rollback; rm -rf "$T"' ERR
 

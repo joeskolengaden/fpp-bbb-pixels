@@ -88,6 +88,15 @@ if [ -n "$FPP_SRC" ] && [ -f "$FPP_SRC/src/channeloutput/BBB48String.cpp" ]; the
   for f in $FILES; do cmp -s "$W/work/$f" "$W/orig/$(echo "$f" | tr / _)" && ok "idempotent: $f" || bad "second run changed $f"; done
   # the stock files must have changed, and must carry every feature marker
   grep -q PIXELTYPE_CUSTOM "$W/work/src/pru/FalconWS281x.asm" && grep -q PIXELTYPE_APA104 "$W/work/src/pru/FalconWS281x.asm" && ok "PRU source has presets + Custom block" || bad "PRU markers"
+  # a fresh patch must not declare a local twice (this once passed every Python-level test and failed on the board's compiler)
+  python3 - "$W/work/src/channeloutput/BBB48String.cpp" "$W/work/src/channeloutput/PixelString.cpp" <<'PY' && ok "no duplicated declaration lines in the patched C++" || bad "duplicated declaration in patched C++"
+import re, sys
+for p in sys.argv[1:]:
+    L = [l.strip() for l in open(p).read().splitlines()]
+    for i in range(1, len(L)):
+        if L[i] == L[i-1] and re.match(r"(int|double|bool|std::string|uint8_t|static const int) [^;(]*;$", L[i]):
+            sys.exit("%s: duplicate line: %s" % (p, L[i]))
+PY
   grep -q fbpCustomDefines "$W/work/src/channeloutput/BBB48String.cpp" && grep -q fbpCfgInt "$W/work/src/channeloutput/BBB48String.cpp" && ok "driver has Custom timing + safe config reads" || bad "driver markers"
   grep -q 'preambleProfile == "tm1908"' "$W/work/src/channeloutput/PixelString.cpp" && ok "PixelString has TM1908 + current controls" || bad "PixelString markers"
   grep -q fbpCustT0 "$W/work/www/co-pixelStrings.php" && php -l "$W/work/www/co-pixelStrings.php" >/dev/null 2>&1 && ok "patched pixel-strings page lints" || bad "page markers / lint"
