@@ -43,7 +43,7 @@ say(){ echo "== $* =="; }
 die(){ echo "ERROR: $*" >&2; exit 1; }
 # Run a Python patcher. A normal failure (anchors do not match: exit 1) is final. A crash by signal (exit >= 128; this board crashes randomly now and then,
 # like its compiler does) is retried up to 3 times: every patcher is idempotent and writes its file atomically.
-py(){ local rc=0 t; for t in 1 2 3; do python3 "$@" && return 0; rc=$?; [ "$rc" -lt 128 ] && return "$rc"; echo "  (python crashed with signal $((rc-128)); retry $t/3)" >&2; sleep 2; done; return "$rc"; }
+py(){ local rc=0 t; for t in 1 2 3 4 5; do python3 "$@" && return 0; rc=$?; [ "$rc" -lt 128 ] && return "$rc"; echo "  (python crashed with signal $((rc-128)); retry $t/5)" >&2; sleep 2; done; echo "  (python kept crashing - this is a system fault, not a mismatch: run the installer again)" >&2; return "$rc"; }
 
 # ---- 0. preflight (environment) -----------------------------------------
 say "preflight"
@@ -107,8 +107,16 @@ syntax_check(){ # syntax_check <target.so> <rel/path/File.cpp> <patched copy>
   [ -n "$cc" ] || { echo "  (cannot extract the compile command for $cpp: syntax check skipped)"; return 0; }
   tmp="$SRC/${cpp%.cpp}.fbpcheck.cpp"; cp "$copy" "$tmp"
   cc=$(echo "$cc" | sed -e "s# -o [^ ]*\.o# -o /dev/null#" -e "s# -c # -fsyntax-only -c #" -e "s#[^ ]*$(basename "$cpp")#$tmp#")
-  if ( cd "$SRC" && env CCACHE_DISABLE=1 bash -c "$cc" >"$T/syntax.log" 2>&1 ); then rm -f "$tmp"; echo "  $(basename "$cpp"): patched source compiles (syntax check)"
-  else rm -f "$tmp"; head -12 "$T/syntax.log" >&2; die "the patched $(basename "$cpp") does not compile - aborting (no changes made)"; fi; }
+  # The compiler on this board sometimes dies with an internal compiler error / signal (random, not the source): retry those up to 3 times; a real compile error is final.
+  local t rc=1
+  for t in 1 2 3; do
+    ( cd "$SRC" && env CCACHE_DISABLE=1 bash -c "$cc" >"$T/syntax.log" 2>&1 ) && { rc=0; break; }
+    grep -qE "internal compiler error|Segmentation fault|Killed|Bus error" "$T/syntax.log" || break
+    echo "  (compiler crashed - not a source error; retry $t/3)" >&2; sleep 2
+  done
+  rm -f "$tmp"
+  if [ "$rc" = 0 ]; then echo "  $(basename "$cpp"): patched source compiles (syntax check)"
+  else head -12 "$T/syntax.log" >&2; die "the patched $(basename "$cpp") does not compile - aborting (no changes made)"; fi; }
 if [ "${FBP_SKIP_SYNTAX:-0}" != 1 ]; then
   syntax_check libfpp-co-BBB48String.so channeloutput/BBB48String.cpp "$T/c"
   syntax_check libfpp.so channeloutput/PixelString.cpp "$T/p"
