@@ -9,9 +9,9 @@ Study date: **2026-08-12**. Supersedes the "open items" scorecard in
 > `PixelString.cpp`, and audited (see CONFIG.md/README.md/REFERENCE.md for
 > current, living documentation — this file remains the design record of *why*).
 > The inverted waveforms (TM1814/TM1829/TM1914) have since been checked on the
-> BeagleBone pad: they idle high, and the 1-bit low time matches the datasheet.
-> The 0-bit is below the sampler's resolution, so its define uses the overhead
-> measured on the 1-bit. MBI6020 was investigated and deliberately not
+> BeagleBone pad: they idle high. TM1814/TM1914 0-bit lows measured 378 ns and
+> 375 ns. TM1829's 0-bit measured 314 ns at `T0_TIME` 310; defines under 300 ns
+> collapse to about 220 ns on this PRU. MBI6020 was investigated and deliberately not
 > implemented (no source gives its exact frame). §7's 10.x port has not been started.
 
 Ground truth for "what is implemented" is **`patch_pixelstring.py` / `patch_asm.py` /

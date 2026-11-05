@@ -104,8 +104,9 @@ for "SAFETY") and reinstall.
 The inverted waveform was checked on the BeagleBone's own pad (P8-30), not with
 a scope. Those three presets idle high; Normal idles low. TM1814 and TM1914 at
 `T0_TIME` 330 measured a 0-bit low of 378 ns and 375 ns (datasheet 310–410) and
-a 1-bit low of about 725 ns. TM1829's 0-bit still measured about 219 ns, short of
-the 300 ns NeoPixelBus figure, so its defines were left at 250/750/1150.
+a 1-bit low of about 725 ns. TM1829 at `T0_TIME` 310 / `T1_TIME` 750 measured a
+0-bit low of 314 ns and a 1-bit low of about 806 ns (period ~1234 ns). Defines
+under 300 ns collapse to about 220 ns at this bit period, so 250 was short.
 
 ## Verify an install
 `sudo bash selftest.sh` — checks the channel maps and every preamble/trailer,

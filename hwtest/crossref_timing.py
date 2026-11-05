@@ -33,7 +33,7 @@ ROWS = [
         {"FastLED": (700, 1800, 2500)}),
     (6, "TM1814 (inverted)",          (330, 700, 1150), True,
         {"NeoPixelBus": (360, 720, 1250)}),
-    (7, "TM1829 (inverted)",          (250, 750, 1150), True,
+    (7, "TM1829 (inverted)",          (310, 750, 1150), True,
         {"FastLED": (340, 680, 1230), "NeoPixelBus": (300, 800, 1200)}),
     (8, "WS2805",                     (250, 740, 990), False,
         {"NeoPixelBus": (300, 790, 1090)}),

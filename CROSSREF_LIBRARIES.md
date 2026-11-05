@@ -27,7 +27,7 @@ the clocks"); the table assumes +50 ns.
 | 4 | UCS1903 400 kHz | 450/1900/2400 | 500/1950/2450 | FastLED 500/2000/2500 | ≤ 50 ns |
 | 5 | TM1803 | 650/1300/1950 | 700/1350/2000 | FastLED 700/1800/2500 | T0H exact; T1H/period shorter (datasheet 680/1360/2040) |
 | 6 | TM1814 inv. | 330/700/1150 | 360/730/1244 | NeoPixelBus 360/720/1250 | T0 on target; T1 and period measured on the pad |
-| 7 | TM1829 inv. | 250/750/1150 | 300/800/1200 | NeoPixelBus 300/800/1200 · FastLED 340/680/1230 | defines follow NeoPixelBus; a 270 ns trial still measured a ~219 ns 0-bit, so it was not changed |
+| 7 | TM1829 inv. | 310/750/1150 | 314/806/1234 | NeoPixelBus 300/800/1200 · FastLED 340/680/1230 | pad measurement, not the +50 ns model. Defines under 300 ns collapse to ~220 ns |
 | 8 | WS2805 | 250/740/990 | 300/790/1040 | NeoPixelBus 300/790/1090 | exact T0H/T1H |
 | 9 | TM1914 inv. | 330/700/1150 | 360/730/1244 | NeoPixelBus 360/720/1250 | same wire timing as TM1814 |
 
@@ -35,7 +35,7 @@ Reading it: presets 2, 4, 7, 8 were evidently derived as *library minus ~50 ns*,
 Presets 3 and 5 follow the datasheets instead of the libraries — the libraries use deliberately slower, centred timings.
 Both decode on spec-compliant chips because the chip threshold sits between the two; it is a design choice, not an error.
 
-**TM1814 / TM1914** were retimed from a pad capture on a BeagleBone Green (200 pixels, P8-30). With `T0_TIME` 330 the 0-bit low measured 378 ns and 375 ns, inside the datasheet window 310–410 (typical 360). The 1-bit low measured 724 ns and 726 ns (typical 720). The bit period at `LOW_TIME` 1150 was about 1245 ns. FastLED's TM1829 (340/680/1230) still disagrees with NeoPixelBus (300/800/1200). A trial `T0_TIME` of 270 for TM1829 measured a 0-bit of about 219 ns, short of 300, so those defines stay at 250/750/1150.
+**TM1814 / TM1914** were retimed from a pad capture on a BeagleBone Green (200 pixels, P8-30). With `T0_TIME` 330 the 0-bit low measured 378 ns and 375 ns, inside the datasheet window 310–410 (typical 360). The 1-bit low measured 724 ns and 726 ns (typical 720). The bit period at `LOW_TIME` 1150 was about 1245 ns. FastLED's TM1829 (340/680/1230) still disagrees with NeoPixelBus (300/800/1200). On the same pad, TM1829 defines of 250 and 280 ns collapsed to a ~220 ns 0-bit; `T0_TIME` 310 measured 314 ns and `T1_TIME` 750 measured about 806 ns, period about 1234 ns.
 
 ## 2. Preambles / colour order
 

@@ -83,7 +83,7 @@ config-byte count, not a channel count. See
 | **SM16825E** | ~800k | 5 | **16 only** | RGB+WW,CW; single-wire (xLights' "4 wire" note is wrong); mandatory 4-byte current-gain **trailer** after the last pixel — overrides module current every frame, our default is a conservative gain index 5/31 (~58mA/ch), no UI opt-out yet | NeoPixelBus `NeoSm168x5Features.h`; chinaasic.com |
 | **UCS7604** | ~800k (Fd2 1.6M optional) | 4 | 8/12/14/**16** | RGBW; 15-byte config **preamble** (`FF×6,00,02` + CFG + 4 current + 2 rsvd); datasheet publishes no bit-timing table, WS2812x-equivalent confirmed by hardware RE | UCS7604 ds VER1.1; FastLED #2088 |
 | **TM1914** | ~360/720/1250 | 3 | 8 | inverted idle-high (same as TM1814); 6-byte mode preamble `FF FF F5 00 00 0A` | NeoPixelBus `NeoTm1914Features.h` |
-| **TM1829** | ~300/800/1200 | 3 | 8 | inverted idle-high; 200µs reset. PRU defines stay 250/750/1150 (NeoPixelBus minus ~50 ns). A 270 ns trial still measured a 0-bit of about 219 ns | NeoPixelBus `NeoEsp32RmtMethod.h` |
+| **TM1829** | ~300/800/1200 | 3 | 8 | inverted idle-high; 200µs reset. PRU defines 310/750/1150. Pad: 0-bit 314 ns, 1-bit ~806 ns, period ~1234 ns. Defines under 300 ns collapse to ~220 ns | NeoPixelBus `NeoEsp32RmtMethod.h` |
 
 ## 5. Our implementation's alignment scorecard
 - ✅ **Design axis-correct**: timing=`pixelTiming`, format=`colorOrder`, matches how

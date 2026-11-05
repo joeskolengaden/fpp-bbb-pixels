@@ -58,7 +58,7 @@ T0H/T1H/period below are the PRU's own `T0_TIME`/`T1_TIME`/`LOW_TIME` defines
 | 4 | UCS1903-400 | UCS1903/UCS2903 @ 400 Kbps | 450/1900/2400 |
 | 5 | TM1803 | TM1803 (Titan V1.6) | 650/1300/1950 |
 | 6 | **TM1814** | TM1814 RGBW — **inverted waveform** | 330/700/1150, idle-high |
-| 7 | **TM1829** | TM1829 RGB — **inverted waveform** | 250/750/1150, idle-high |
+| 7 | **TM1829** | TM1829 RGB — **inverted waveform** | 310/750/1150, idle-high |
 | 8 | **WS2805** | WS2805 RGB+WW+CW, 5ch | 250/740/990 |
 | 9 | **TM1914** | TM1914 RGB — **inverted waveform** | 330/700/1150, idle-high (same wire timing as TM1814, different preamble) |
 | 10 | **UCS7604** | UCS7604 RGBW, 8/16-bit | same as Normal (WS2812x-equivalent) + config preamble |
@@ -135,8 +135,9 @@ swap + stops fppd for the compile, then restores both.
 - **Inverted waveform** (TM1814/TM1829/TM1914) swaps the PRU's GPIO set/clear
   registers. On a BeagleBone Green the pad idles high for those three presets and
   low for Normal. TM1814 and TM1914 measured a 0-bit low of 378 ns and 375 ns
-  and a 1-bit low of about 725 ns. TM1829's 0-bit measured about 219 ns, so its
-  defines were not changed.
+  and a 1-bit low of about 725 ns. TM1829 at `T0_TIME` 310 measured a 0-bit
+  low of 314 ns and a 1-bit low of about 806 ns. Defines under 300 ns collapse
+  to about 220 ns on this PRU, which is why 250 was short.
 - **Preambles are automatic and per-port-instance, not per-string**: selecting
   Pixel Timing = TM1814/TM1914/UCS7604 prepends the matching config frame to
   **every port on that BBB48String instance** (TM1814: 8 bytes max-current;

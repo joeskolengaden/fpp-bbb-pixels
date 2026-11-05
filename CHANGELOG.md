@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.2 (2026-11-05)
+TM1829 short-pulse define is 310 ns, up from 250. On a BeagleBone Green, with the preset period of 1150 ns, defines of 250 and 280 ns both collapsed to a 0-bit of about 220 ns: the wait had already expired. Define 310 measured a 0-bit low of 314 ns and, with T1 left at 750, a 1-bit low of about 806 ns (NeoPixelBus 300/800). The bit period was about 1234 ns and the line idled high. Installs that still have the unpublished 270/740 trial are put back to 310/750.
+
 ## 1.0.1 (2026-11-05)
 TM1814 and TM1914 short-pulse defines are 330 ns, up from 310. On a BeagleBone Green the pad measured a 0-bit low of 378 ns and 375 ns (datasheet window 310–410, typical 360) and a 1-bit low of 724 ns and 726 ns (typical 720). Both idle high. A 48-port sequence at 20 fps holds: TM1814 at 1100 pixels per port (44.4 ms on the wire), TM1829 and TM1914 at 1500 (45.2 ms and 45.3 ms). TM1814 at 1500 pixels is 60.5 ms, past the frame; fppd keeps 20 fps and logs that only the first 82% of each port updates.
 

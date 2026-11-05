@@ -71,10 +71,12 @@ new = """#if defined(PIXELTYPE_APA104)
 #define T1_TIME   700
 #define LOW_TIME  1150
 #elif defined(PIXELTYPE_TM1829)
-// TM1829 (RGB, inverted). NeoPixelBus 300/800/1200, defines 50 ns under that.
-// A trial at 270/740 was measured on the same pad: the 1-bit low was ~812 ns,
-// but the 0-bit low was ~219 ns, still short of 300. Left at 250/750/1150.
-#define T0_TIME   250
+// TM1829 (RGB, inverted). NeoPixelBus 300/800/1200. On this PRU, with
+// LOW_TIME 1150, a T0 define under ~300 ns has already expired when the
+// wait runs, so the 0-bit collapses to the set-to-clear gap (~220 ns).
+// Pad, 120 pixels, P8-30: T0_TIME 310 measured a 0-bit low of 314 ns and
+// T1_TIME 750 a 1-bit low of about 806 ns. Period ~1234 ns. Idle high.
+#define T0_TIME   310
 #define T1_TIME   750
 #define LOW_TIME  1150
 #elif defined(PIXELTYPE_WS2805)
@@ -99,12 +101,29 @@ new = """#if defined(PIXELTYPE_APA104)
 if "PIXELTYPE_APA104" in s:
     # 350 and 310 were both "datasheet minus an assumed 50 ns". The pad measured
     # 330 ns inside the TM1814/TM1914 window (see the comments on those defines).
-    # TM1829 is not retimed: 270 ns still measured a 0-bit of ~219 ns.
-    want = [("TM1814", "T0_TIME", 330), ("TM1914", "T0_TIME", 330)]
+    # TM1829 T0 is 310: 250 and 280 both collapsed to ~220 ns at LOW_TIME 1150,
+    # and 310 measured 314 ns. T1 stays 750 (board trials at 740 are put back).
+    want = [("TM1814", "T0_TIME", 330), ("TM1914", "T0_TIME", 330),
+            ("TM1829", "T0_TIME", 310), ("TM1829", "T1_TIME", 750)]
     orig = s
     for flag, name, value in want:
         pat = re.compile(r"(#elif defined\(PIXELTYPE_%s\)(?:(?!#elif|#else).)*?#define %s\s+)\d+" % (flag, name), re.S)
         s = pat.sub(r"\g<1>%d" % value, s, count=1)
+    # 1.0.1 and the on-board 270/740 trial both left a comment that now lies.
+    tm1829_note = ("// TM1829 (RGB, inverted). NeoPixelBus 300/800/1200. On this PRU, with\n"
+                   "// LOW_TIME 1150, a T0 define under ~300 ns has already expired when the\n"
+                   "// wait runs, so the 0-bit collapses to the set-to-clear gap (~220 ns).\n"
+                   "// Pad, 120 pixels, P8-30: T0_TIME 310 measured a 0-bit low of 314 ns and\n"
+                   "// T1_TIME 750 a 1-bit low of about 806 ns. Period ~1234 ns. Idle high.\n")
+    for stale in (
+        "// TM1829 (RGB, inverted). NeoPixelBus 300/800/1200, defines 50 ns under that.\n"
+        "// A trial at 270/740 was measured on the same pad: the 1-bit low was ~812 ns,\n"
+        "// but the 0-bit low was ~219 ns, still short of 300. Left at 250/750/1150.\n",
+        "// TM1829 (RGB, inverted). NeoPixelBus 300/800/1200. Measured edge overhead\n"
+        "// puts the defines at 270/740 (750 measured ~810 ns on this pad).\n",
+    ):
+        if stale in s:
+            s = s.replace(stale, tm1829_note, 1)
     print("  asm timings: already patched" + (" (inverted presets retimed)" if s != orig else ""))
 elif old in s:
     s = s.replace(old, new); print("  asm timings: patched (presets 2-5 + TM1814)")
