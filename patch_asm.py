@@ -62,14 +62,18 @@ new = """#if defined(PIXELTYPE_APA104)
 #define T1_TIME   1300
 #define LOW_TIME  1950
 #elif defined(PIXELTYPE_TM1814)
-// TM1814 (RGBW ~800kHz); inverted waveform handled by GPIO swap below.
-// T0_TIME 310: NeoPixelBus' 360 ns minus the ~50 ns PRU overhead every other preset
-// here assumes (350 put T0H ~40 ns high, within 10 ns of the chip's 410 ns maximum).
-#define T0_TIME   310
+// TM1814 (RGBW, inverted). Datasheet: 0-bit low 310-410 ns (typical 360),
+// 1-bit low 650-1000 (typical 720), period 1250. Pad on a BeagleBone Green,
+// 200 pixels, all-zero and all-one frames: idle high, period ~1246 ns,
+// 0-bit low 378 ns, 1-bit low 724 ns. 310 (datasheet minus an assumed 50 ns)
+// sat on the bottom of that window; 330 is what measured inside it.
+#define T0_TIME   330
 #define T1_TIME   700
 #define LOW_TIME  1150
 #elif defined(PIXELTYPE_TM1829)
-// TM1829 (RGB, inverted; NeoPixelBus NeoEsp32RmtMethod.h ~250/750/1250)
+// TM1829 (RGB, inverted). NeoPixelBus 300/800/1200, defines 50 ns under that.
+// A trial at 270/740 was measured on the same pad: the 1-bit low was ~812 ns,
+// but the 0-bit low was ~219 ns, still short of 300. Left at 250/750/1150.
 #define T0_TIME   250
 #define T1_TIME   750
 #define LOW_TIME  1150
@@ -83,7 +87,7 @@ new = """#if defined(PIXELTYPE_APA104)
 #elif defined(PIXELTYPE_TM1914)
 // TM1914 (RGB, inverted; identical wire timing to TM1814 -- only the
 // PixelString-level preamble differs, see preambleProfile="tm1914")
-#define T0_TIME   310
+#define T0_TIME   330
 #define T1_TIME   700
 #define LOW_TIME  1150
 #elif defined(PIXELTYPE_SLOW)
@@ -93,12 +97,15 @@ new = """#if defined(PIXELTYPE_APA104)
 #else"""
 
 if "PIXELTYPE_APA104" in s:
-    # upgrade: earlier versions used T0_TIME 350 for TM1814/TM1914 (see CROSSREF_LIBRARIES.md)
-    up = 0
-    for flag in ("TM1814", "TM1914"):
-        pat = re.compile(r"(#elif defined\(PIXELTYPE_%s\)(?:(?!#elif|#else).)*?#define T0_TIME\s+)350" % flag, re.S)
-        s, k = pat.subn(r"\g<1>310", s); up += k
-    print("  asm timings: already patched" + (" (TM1814/TM1914 T0_TIME upgraded to 310)" if up else ""))
+    # 350 and 310 were both "datasheet minus an assumed 50 ns". The pad measured
+    # 330 ns inside the TM1814/TM1914 window (see the comments on those defines).
+    # TM1829 is not retimed: 270 ns still measured a 0-bit of ~219 ns.
+    want = [("TM1814", "T0_TIME", 330), ("TM1914", "T0_TIME", 330)]
+    orig = s
+    for flag, name, value in want:
+        pat = re.compile(r"(#elif defined\(PIXELTYPE_%s\)(?:(?!#elif|#else).)*?#define %s\s+)\d+" % (flag, name), re.S)
+        s = pat.sub(r"\g<1>%d" % value, s, count=1)
+    print("  asm timings: already patched" + (" (inverted presets retimed)" if s != orig else ""))
 elif old in s:
     s = s.replace(old, new); print("  asm timings: patched (presets 2-5 + TM1814)")
 else:

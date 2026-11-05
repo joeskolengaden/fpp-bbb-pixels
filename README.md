@@ -57,10 +57,10 @@ T0H/T1H/period below are the PRU's own `T0_TIME`/`T1_TIME`/`LOW_TIME` defines
 | 3 | WS2811-400 | WS2811 @ 400 Kbps | 450/1150/2400 |
 | 4 | UCS1903-400 | UCS1903/UCS2903 @ 400 Kbps | 450/1900/2400 |
 | 5 | TM1803 | TM1803 (Titan V1.6) | 650/1300/1950 |
-| 6 | **TM1814** | TM1814 RGBW — **inverted waveform** | 310/700/1150, idle-high |
+| 6 | **TM1814** | TM1814 RGBW — **inverted waveform** | 330/700/1150, idle-high |
 | 7 | **TM1829** | TM1829 RGB — **inverted waveform** | 250/750/1150, idle-high |
 | 8 | **WS2805** | WS2805 RGB+WW+CW, 5ch | 250/740/990 |
-| 9 | **TM1914** | TM1914 RGB — **inverted waveform** | 310/700/1150, idle-high (same wire timing as TM1814, different preamble) |
+| 9 | **TM1914** | TM1914 RGB — **inverted waveform** | 330/700/1150, idle-high (same wire timing as TM1814, different preamble) |
 | 10 | **UCS7604** | UCS7604 RGBW, 8/16-bit | same as Normal (WS2812x-equivalent) + config preamble |
 | 11 | **Custom timing** | any single-wire chip: you type T0H / T1H / bit period (ns) and tick *Inverted* if it idles high | whatever you enter (period 1000-4000) |
 | 12 | **TM1903 / TM1824 / TM1934** | Titan Micro RGB / RGBW, 800 kHz, not inverted | 360/720/1300 (datasheet period >= 1250) |
@@ -132,10 +132,11 @@ swap + stops fppd for the compile, then restores both.
   on-device regression tests for the 11 timing presets and the 9 SPI protocols.
 
 ## Preamble/trailer notes (TM1814, TM1914, UCS7604, SM16825E)
-- **Inverted waveform** (TM1814/TM1829/TM1914) is done by swapping the PRU's GPIO
-  set/clear registers — validated to *compile & load*; the actual inverted signal
-  needs a strip / analyzer on each chip to confirm on the wire. **None of the three
-  have been scoped yet** — this is the biggest open risk in this package.
+- **Inverted waveform** (TM1814/TM1829/TM1914) swaps the PRU's GPIO set/clear
+  registers. On a BeagleBone Green the pad idles high for those three presets and
+  low for Normal. TM1814 and TM1914 measured a 0-bit low of 378 ns and 375 ns
+  and a 1-bit low of about 725 ns. TM1829's 0-bit measured about 219 ns, so its
+  defines were not changed.
 - **Preambles are automatic and per-port-instance, not per-string**: selecting
   Pixel Timing = TM1814/TM1914/UCS7604 prepends the matching config frame to
   **every port on that BBB48String instance** (TM1814: 8 bytes max-current;
@@ -228,10 +229,9 @@ headers or PRU toolchain available here to compile those for real.
   modes, all preambles/trailer) against the live `libfpp`, compiles all 11 PRU
   presets (if an output is configured), and the SPIPixels factory symbol. Run
   automatically with `--test`.
-- **On the wire:** pair with `tools/esp32-led-analyzer` (ESP32-S3 RMT) or
-  FastLED-on-ESP32 as a reference generator to confirm timing/bytes/polarity —
-  essential for the TM1814/TM1829/TM1914 inverted waveforms, none of which have
-  been scoped yet (see IC_IMPLEMENTATION_STUDY.md for what to check).
+- **On the wire:** the BeagleBone pad confirms idle level and the 1-bit low time.
+  An ESP32 analyzer or a scope is what would resolve the 0-bit, which is shorter
+  than the pad sampler.
 
 ## Files
 `install.sh` · `uninstall.sh` · `selftest.sh` · `patch_{asm,bbb48string,pixelstring,ui}.py`

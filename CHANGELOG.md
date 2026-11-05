@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1 (2026-11-05)
+TM1814 and TM1914 short-pulse defines are 330 ns, up from 310. On a BeagleBone Green the pad measured a 0-bit low of 378 ns and 375 ns (datasheet window 310–410, typical 360) and a 1-bit low of 724 ns and 726 ns (typical 720). Both idle high. A 48-port sequence at 20 fps holds: TM1814 at 1100 pixels per port (44.4 ms on the wire), TM1829 and TM1914 at 1500 (45.2 ms and 45.3 ms). TM1814 at 1500 pixels is 60.5 ms, past the frame; fppd keeps 20 fps and logs that only the first 82% of each port updates.
+
+TM1829 is unchanged. A trial define of 270 ns still measured a 0-bit of about 219 ns, short of the 300 ns NeoPixelBus figure, so the defines stay 250/750/1150.
+
 ## 1.0.0 (2026-11-03)
 First versioned release: everything built and verified on a BeagleBone Green running FPP 5.4.1.
 

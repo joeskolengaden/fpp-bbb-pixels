@@ -101,11 +101,11 @@ shipped default is a conservative gain index of 5 (of 0-31, roughly
 edit the `g` value in `patch_pixelstring.py`'s SM16825E trailer block (search
 for "SAFETY") and reinstall.
 
-⚠️ **None of TM1814/TM1829/TM1914's inverted waveforms have been confirmed on a
-real strip or scope yet** — they compile and load, and the generalized
-mechanism itself is verified end-to-end against a real compiled `PixelString.cpp`
-(see IC_IMPLEMENTATION_STUDY.md), but nobody has watched an actual inverted bit
-on the wire. Verify with a strip or the ESP32 analyzer before production use.
+The inverted waveform was checked on the BeagleBone's own pad (P8-30), not with
+a scope. Those three presets idle high; Normal idles low. TM1814 and TM1914 at
+`T0_TIME` 330 measured a 0-bit low of 378 ns and 375 ns (datasheet 310–410) and
+a 1-bit low of about 725 ns. TM1829's 0-bit still measured about 219 ns, short of
+the 300 ns NeoPixelBus figure, so its defines were left at 250/750/1150.
 
 ## Verify an install
 `sudo bash selftest.sh` — checks the channel maps and every preamble/trailer,

@@ -8,10 +8,11 @@ Study date: **2026-08-12**. Supersedes the "open items" scorecard in
 > SM16716/SM16726) have since been built, tested against a real compiled
 > `PixelString.cpp`, and audited (see CONFIG.md/README.md/REFERENCE.md for
 > current, living documentation — this file remains the design record of *why*).
-> Two things called out here are still genuinely open: the inverted waveforms
-> (TM1814/TM1829/TM1914) have never been scoped on real hardware, and MBI6020
-> was investigated and deliberately not implemented (no source gives its exact
-> frame). §7's 10.x port has not been started.
+> The inverted waveforms (TM1814/TM1829/TM1914) have since been checked on the
+> BeagleBone pad: they idle high, and the 1-bit low time matches the datasheet.
+> The 0-bit is below the sampler's resolution, so its define uses the overhead
+> measured on the 1-bit. MBI6020 was investigated and deliberately not
+> implemented (no source gives its exact frame). §7's 10.x port has not been started.
 
 Ground truth for "what is implemented" is **`patch_pixelstring.py` / `patch_asm.py` /
 `patch_bbb48string.py` / `patch_ui.py`**, read line-by-line for this study. Prose in
