@@ -1,24 +1,21 @@
 # Which other pixel ICs could be added?
 
-> **Status (built and verified on the board):** SPI aliases · HD108/NS108 · APA102/SK9822/HD107S HD modes · TM1814/UCS7604/SM16825E current control · TM1914 mode ·
-> menu labels naming the extra chips. **Not built, deliberately:** SM16803P/SM16813PB/SM16823E, MY92xx, UCS7604 1.6 Mbps, TX1812 — no datasheet with timing/frame
-> could be found (or, for 1.6 Mbps, the pulses cannot be verified without a scope/analyser), and a guessed frame is worse than no support.
-> HD108 facts come from the manufacturer's spec (Rose Lighting HD108 V1.2): start frame >= 128 zero bits; LED frame 64 bits = marker 1 + three 5-bit gains + R,G,B 16-bit;
-> data sampled on the clock's rising edge; no end frame required (the padding clocks are FastLED's, harmless). FastLED (8-byte start) and NeoPixelBus (16-byte start) disagree; the datasheet decides: 16.
+> **Status (2026-11-05).** Sections 1 and 2 below are the research record. What they called "worth adding" is built: menu labels, HD108/NS108, APA102 HD mode, chip-current controls, TM1914 mode, and presets 12–18 (Round 2). Two rows stayed off on purpose. SM16803P / SM16813PB / SM16823E still have no datasheet that prints the frame bytes, so no trailer was added. UCS7604 at 1.6 Mbps needs a 100 ns pulse, which this PRU loop cannot hold and the pad cannot check.
+>
+> This pass: **GS8608** is a Normal label (WLED `TYPE_GS8608`: same driver as WS2812, and a test pattern unless data keeps arriving). **SM16824E** moved onto the 0.3/0.9 µs preset. Its sheet IBZOZOV1.2 prints T0H/T1H 0.3/0.9 µs ±50 ns at 800 kbps, which is outside Normal's measured 1-bit. The same sheet's 16-bit current word is not sent, because RGBW is shared with other chips and a silent trailer would hit them. **DP1903** stays off: a forum quote of a missing PDF says 0.5/2.0 µs, FastLED says 0.4/1.4 µs at 800 kHz and 0.8/2.4 µs at 400 kHz, and neither pair sits inside Normal or UCS1903-400.
 
 Checked against: our own catalogue (`IC_IMPLEMENTATION_STUDY.md` §3, which maps every chip in xLights' vocabulary), WLED's chip list (copy in the
 FPP tree), FastLED master (README, `chipsets.h`, `fl/chipsets/hd108.h`) and NeoPixelBus master (feature/method files). A chip is "new" only if it is
 in none of our supported presets, colour orders or SPI protocols.
 
-**Bottom line: almost everything popular already works.** What is left is one clocked chip (HD108), a handful of upgrades to chips we already
-drive (current/gain control, APA102 5-bit mode, TM1914 mode), two niche one-wire families, and a list of chips that cannot be done on this hardware.
+**Bottom line: almost everything popular already works.** The leftover work in the sections below was finished in later passes, except the chips the status note still refuses.
 
 ## 1. Already works — only the name is missing from the menus (cheap: documentation/labels, no new code)
 
 | Chip | Why it already works |
 |---|---|
 | **WS2816** (16-bit RGB) | FastLED drives it as a WS2812 800 kHz stream with 16-bit channels = our `GRB16` order on *Normal* timing (6 bytes/pixel) |
-| **SM16824E** | FastLED timing 300/600/300 ns = a 1.2 µs bit, inside *Normal* |
+| **SM16824E** | Moved to the 0.3/0.9 µs preset. Sheet IBZOZOV1.2 is T0H 0.3 µs / T1H 0.9 µs ±50 ns, not Normal. The 16-bit end-of-frame current word is not sent |
 | **WS2812B-V5, WS2812B-Mini-V3** | 220/360/580 ns, inside *Normal* |
 | **WS2818 / WS2813 / WS2815**, **TM1804 / TM1809 / TM1812**, **GS8206/8208**, **SM16703**, **UCS1903B / UCS2903** | in xLights' "ws2811 group" → *Normal* |
 | **UCS2904, SK6812-RGBW, WS2814, SM16804** (RGBW) | *Normal* + a 4-character order (`GRBW`, `RGBW`, `WRGB`) |
@@ -84,5 +81,14 @@ Pulse widths (T0H/T1H) are NOT independently measured on this board (the pad sam
 - **WS281x over SPI MOSI**: encodings are known (4 bits at 3.2 MHz, 5 bits at 4.0 MHz) but spidev here is capped at 4096 bytes per transfer (~340 pixels), the AM335x MOSI idle level and word gaps cannot be verified without a scope, and the PRU already does the job on 48 ports.
 - **MY9221/9231/9291/9268**: sample on both clock edges and latch by pulsing DI while the clock idles; SPI cannot do either.
 - **TLC5947/48, DM633/634/DM13A, MBI5xxx, HL1606, A6281 (needs CS wired as latch)**: need a latch pin or a free-running grayscale clock.
-- **No datasheet with timing/frame found**: TM1830, TM1815, UCS2109/2114, UCS5604, XL-2812, WS2851, GS8608, SM16803P/13PB/23E, INK1003, DM412, ICND2110, RM2021, HD109, APA102-8192/65536.
+- **No datasheet with timing/frame found**: TM1830, TM1815, UCS2109/2114, UCS5604, XL-2812, WS2851, SM16803P/13PB/23E, INK1003, DM412, ICND2110, RM2021, HD109, APA102-8192/65536. GS8608 has no timing sheet either; WLED drives it as WS2812, which is why it is a Normal label and not a preset.
+
+## Round 3 (2026-11-05): datasheet pass, no new waveform
+
+| Chip | Result |
+|---|---|
+| **GS8608** | Label on Normal, plus a note that it shows a built-in pattern when the line goes quiet. Source: WLED `const.h` `TYPE_GS8608`. No new PRU define. |
+| **SM16824E** | Label moved to preset 15. Source: Sunmoon/Linkage sheet IBZOZOV1.2 (800 kbps, 0.3/0.9 µs ±50 ns, 32-bit RGBW pixels, then 16 bits of 4-bit-per-channel gain). Gain word not sent. |
+| **SM16803P / SM16813PB / SM16823E** | Not built. Chinaasic lists SM16823E as SID, 800 kbps, 4-bit gain per channel, but the page is not a timing table or a frame diagram. The SM16824E frame must not be copied onto a 3-channel part. |
+| **DP1903** | Not built. FastLED `TIMING_DP1903_800KHZ` is 400/1400 ns and `TIMING_DP1903_400KHZ` is 800/2400 ns. A forum quote of the Depuw PDF (the PDF 404s) says 500/2000 ns and a 24 µs reset. Those three disagree, and none is Normal or the UCS1903-400 preset. |
 - **12/20-bit chips** (UCS5603, UCS9812, GE8822, LPD1886 12-bit): the output map is byte-granular. **APA109, SK9816**: single-wire despite being listed as clocked.

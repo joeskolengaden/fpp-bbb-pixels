@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.3 (2026-11-05)
+GS8608 is named on the Normal timing menu. WLED drives it with the WS2812 waveform and notes that the chip shows a test pattern unless data keeps arriving, so the limits card says the same. No new pulse times.
+
+SM16824E moved from the Normal label to the 0.3/0.9 µs preset. Its datasheet (IBZOZOV1.2) is 300/900 ns ±50 ns at 800 kbps, which is outside the Normal 1-bit. The 16-bit current-gain word at the end of that frame is not sent. SM16803P, SM16813PB, SM16823E and DP1903 were checked and left out: the first three still have no printed frame, and the DP1903 numbers in FastLED and in a forum quote of a missing PDF do not agree.
+
 ## 1.0.2 (2026-11-05)
 TM1829 short-pulse define is 310 ns, up from 250. On a BeagleBone Green, with the preset period of 1150 ns, defines of 250 and 280 ns both collapsed to a 0-bit of about 220 ns: the wait had already expired. Define 310 measured a 0-bit low of 314 ns and, with T1 left at 750, a 1-bit low of about 806 ns (NeoPixelBus 300/800). The bit period was about 1234 ns and the line idled high. Installs that still have the unpublished 270/740 trial are put back to 310/750.
 

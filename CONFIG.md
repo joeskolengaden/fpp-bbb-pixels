@@ -5,7 +5,7 @@ On the **Channel Outputs → Pixel Strings (WL16)** page, per output you set a
 
 | Chip | Pixel Timing | Color Order | Extra |
 |---|---|---|---|
-| WS2811 (800k), WS2812/B, WS2813, **WS2815**, SK6812, GS8208 | **Normal** | RGB/GRB/… | — |
+| WS2811 (800k), WS2812/B, WS2813, **WS2815**, SK6812, GS8208, **GS8608** | **Normal** | RGB/GRB/… | GS8608 shows its built-in pattern if the data stops. A running sequence (including black) keeps it quiet; nothing is sent after the output stops |
 | SK6812-RGBW, WS2814 | **Normal** | `GRBW` (or your chip's) | 4 ch/pixel |
 | APA104 / APA106 / PL9823 / SK6822 | **APA104** | RGB/GRB | — |
 | WS2811 @ 400 Kbps | **WS2811 400Kbps** | RGB | — |
@@ -22,7 +22,7 @@ On the **Channel Outputs → Pixel Strings (WL16)** page, per output you set a
 | **UCS7604** (RGBW, 8 or 16-bit) | **UCS7604** | `RGBW` (8-bit) or `RGBW16` (16-bit) | + config preamble, bit depth auto-detected from color order, see below |
 | **TM1903**, **TM1934** (RGB), **TM1824** (RGBW) | **TM1903 / TM1824 / TM1934** | `RGB` / `RGBW` | TM1814's pulses but not inverted, no preamble (TM1934's optional mode frame is not sent: its bytes are not in the datasheet text) |
 | **UCS2912**, **UCS1912** (12-channel drivers: 4 RGB groups per chip) | **UCS2912** / **UCS1912** | `RGB` | each chip eats 4 pixels of the port; both need a longer pulse than Normal |
-| **TX1812**, **TX1818**, **GS8208B**, **SM16703SP** (RGB) / **LC8816E** (RGBW) | **TX1812 / TX1818 / LC8816E / GS8208B** | `GRB` / `GRBW` | the 0.3 / 0.9 us pulse family; TX1812 and LC8816E are GRB / GRBW |
+| **TX1812**, **TX1818**, **GS8208B**, **SM16703SP** (RGB) / **LC8816E**, **SM16824E** (RGBW) | **TX1812 / TX1818 / LC8816E / GS8208B** | `GRB` / `GRBW` / `RGBW` | the 0.3 / 0.9 us pulse family. SM16824E's sheet (IBZOZOV1.2) is 300/900/1200 ns ±50 ns and a 16-bit current word after the last pixel. That word is not sent, so current stays at the REXT resistor |
 | **TM1908** (RGB) | **TM1908** | `RGB` | + 9-byte header sent on every port (auto-switch mode + current, 2-25 mA via *Chip current*) |
 | **LPD1886** (8-bit mode, GM pin floating) | **LPD1886 (8-bit)** | `RGB` | its 12-bit mode cannot be driven |
 | **LC8812 / LC8812B** (RGB) | **LC8812 / LC8812B** | `GRB` | one T1H (750 ns) that is inside both datasheet versions |

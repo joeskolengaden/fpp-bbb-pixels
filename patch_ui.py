@@ -36,7 +36,7 @@ else:
     m1 = re.search(r'<option value="1">[^<]*</option>', s)
     if not (m0 and m1):
         sys.exit("  ui ERROR: timing option anchors not found")
-    block = ('<option value="0">Normal - WS2811(800Kbps)/WS2812/WS2813/WS2815/SK6812/GS8208/most WS281x</option>\n'
+    block = ('<option value="0">Normal - WS2811(800Kbps)/WS2812/WS2813/WS2815/SK6812/GS8208/GS8608/most WS281x</option>\n'
              + IND + '<option value="1">Slow - ws281x variant (longer high time, 800Kbps)</option>\n'
              + IND + '<option value="2">APA104 / APA106 / PL9823 / SK6822</option>\n'
              + IND + '<option value="3">WS2811 400Kbps</option>\n'
@@ -56,7 +56,7 @@ NEWOPT = {
     12: "TM1903 / TM1824 (RGBW) / TM1934 (RGB, 800 kHz)",
     13: "UCS2912 (RGB, 12-channel driver)",
     14: "UCS1912 (RGB, 12-channel driver)",
-    15: "TX1812 / TX1818 / LC8816E (RGBW) / GS8208B (0.3 / 0.9 us pulses)",
+    15: "TX1812 / TX1818 / LC8816E (RGBW) / GS8208B / SM16824E (0.3 / 0.9 us pulses)",
     16: "TM1908 (RGB, current-set frame)",
     17: "LPD1886 (8-bit mode)",
     18: "LC8812 / LC8812B (RGB)",
@@ -73,7 +73,7 @@ for n, text in NEWOPT.items():
 
 # 1b) menu labels: name the extra chips each timing covers (idempotent: only rewrites a label that differs)
 LABELS = {
-    0: "Normal - WS2811/WS2812/WS2813/WS2815/WS2818, SK6812, GS8208, SM16703/SM16824E, SK6813, CS8812, HC2912C, WS2813B-RGBW, UCS1903B/UCS2904, WS2816 (16-bit) and most 800 kHz chips",
+    0: "Normal - WS2811/WS2812/WS2813/WS2815/WS2818, SK6812, GS8208, GS8608, SM16703, SK6813, CS8812, HC2912C, WS2813B-RGBW, UCS1903B/UCS2904, WS2816 (16-bit) and most 800 kHz chips",
     1: "Slow - ws281x variant (longer high time, 800 kHz)",
     2: "APA104 / APA106 / PL9823 / SK6822",
     3: "WS2811 400 kHz",

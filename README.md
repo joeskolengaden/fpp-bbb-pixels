@@ -51,7 +51,7 @@ T0H/T1H/period below are the PRU's own `T0_TIME`/`T1_TIME`/`LOW_TIME` defines
 *is* the full bit period, not a separate low-time).
 | Value | Preset | Chips | T0H/T1H/period (ns) |
 |---|---|---|---|
-| 0 | Normal | WS2811-800, WS2812/B, WS2813, WS2815, SK6812, GS8208 | 200/675/1150 |
+| 0 | Normal | WS2811-800, WS2812/B, WS2813, WS2815, SK6812, GS8208, GS8608 | 200/675/1150 |
 | 1 | Slow | ws281x variant (longer high) | 300/800/1225 |
 | 2 | APA104 | APA104/APA106/PL9823/SK6822 | 300/1300/1610 |
 | 3 | WS2811-400 | WS2811 @ 400 Kbps | 450/1150/2400 |
@@ -66,7 +66,7 @@ T0H/T1H/period below are the PRU's own `T0_TIME`/`T1_TIME`/`LOW_TIME` defines
 | 12 | **TM1903 / TM1824 / TM1934** | Titan Micro RGB / RGBW, 800 kHz, not inverted | 360/720/1300 (datasheet period >= 1250) |
 | 13 | **UCS2912** | 12-channel RGB driver | 400/800/1250 |
 | 14 | **UCS1912** | 12-channel RGB driver | 250/1000/1250 |
-| 15 | **TX1812 / TX1818 / LC8816E / GS8208B** | the 0.3 / 0.9 us family (SM16703SP too) | 300/900/1250 |
+| 15 | **TX1812 / TX1818 / LC8816E / GS8208B** | the 0.3 / 0.9 us family (SM16703SP and SM16824E too) | 300/900/1250 |
 | 16 | **TM1908** | TM1908 RGB + 9-byte header (auto-switch mode, current) | 240/480/1250 |
 | 17 | **LPD1886 (8-bit)** | LPD1886 with GM floating | 200/600/1250 |
 | 18 | **LC8812 / LC8812B** | RGB, T1H inside both datasheet versions | 300/750/1250 |

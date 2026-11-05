@@ -10,9 +10,9 @@ var fbpPreamble = {6: 8, 9: 6, 10: 15, 16: 9};                 // setup bytes se
 var fbpStepMs = {20: 50, 25: 40, 30: 33, 40: 25};      // FPP step time for each frame rate
 var fbpFpsList = [20, 25, 30, 40];
 var fbpPresets = [
-    {name: 'Normal', chips: 'WS2811 (800 kHz), WS2812/B, WS2813, WS2813B-RGBW, WS2815, WS2818, SK6812, SK6813, GS8208, SM16703, SM16824E, CS8812, HC2912C, UCS1903B, UCS2904 and most other WS281x-style pixels. Also the 16-bit chips WS2816 (colour order GRB16), UCS8903, UCS8904 and SM16825E (pick a 16-bit colour order).',
+    {name: 'Normal', chips: 'WS2811 (800 kHz), WS2812/B, WS2813, WS2813B-RGBW, WS2815, WS2818, SK6812, SK6813, GS8208, GS8608, SM16703, CS8812, HC2912C, UCS1903B, UCS2904 and most other WS281x-style pixels. Also the 16-bit chips WS2816 (colour order GRB16), UCS8903, UCS8904 and SM16825E (pick a 16-bit colour order).',
      rows: [[3, 'RGB pixels (3 bytes)'], [4, 'RGBW pixels (4 bytes)'], [6, '16-bit RGB: UCS8903, or 6-channel FW1906 (6 bytes)'], [8, '16-bit RGBW: UCS8904 (8 bytes)'], [10, '16-bit RGBWC: SM16825E (10 bytes)']],
-     note: 'SM16825E automatically gets a fixed current setting of about 58 mA per channel.'},
+     note: 'SM16825E automatically gets a fixed current setting of about 58 mA per channel. GS8608 uses this same waveform, and it plays its own test pattern if the data line goes quiet (WLED keeps a signal on it about twice a second). FPP sends frames while a sequence or test mode is running, including all-black frames. It does not send a keepalive after the output stops.'},
     {name: 'Slow', chips: 'WS281x variants that need a longer high time (800 kHz).', rows: [[3, 'RGB pixels (3 bytes)'], [4, 'RGBW pixels (4 bytes)']], note: ''},
     {name: 'APA104 / APA106 / PL9823 / SK6822', chips: 'The slower 1.7 microsecond-per-bit pixels.', rows: [[3, 'RGB pixels (3 bytes)']], note: ''},
     {name: 'WS2811 400 kHz', chips: 'Old low-speed WS2811. About half the speed of a WS2812.', rows: [[3, 'RGB pixels (3 bytes)']], note: ''},
@@ -33,7 +33,7 @@ var fbpPresets = [
      note: 'TM1934 can also take an optional mode-setting frame at power-up; its bytes are not printed in the datasheet text, so none is sent.'},
     {name: 'UCS2912', chips: 'UCS2912 12-channel RGB driver (4 RGB groups per chip; set 4 pixels per chip as 4 pixels on the port). Needs a longer 0-pulse than Normal.', rows: [[3, 'RGB pixels (3 bytes)']], note: ''},
     {name: 'UCS1912', chips: 'UCS1912 12-channel RGB driver. Needs a longer 1-pulse (1 microsecond) than Normal.', rows: [[3, 'RGB pixels (3 bytes)']], note: ''},
-    {name: 'TX1812 / TX1818 / LC8816E / GS8208B', chips: 'The 0.3 / 0.9 microsecond pixel family: TX1812, TX1818, LC8816E (RGBW, order GRBW), GS8208B, SM16703SP.', rows: [[3, 'RGB pixels (3 bytes)'], [4, 'RGBW pixels (4 bytes)']], note: 'TX1812 and LC8816E want colour order GRB / GRBW.'},
+    {name: 'TX1812 / TX1818 / LC8816E / GS8208B', chips: 'The 0.3 / 0.9 microsecond pixel family: TX1812, TX1818, LC8816E (RGBW, order GRBW), GS8208B, SM16703SP, SM16824E (RGBW).', rows: [[3, 'RGB pixels (3 bytes)'], [4, 'RGBW pixels (4 bytes)']], note: 'TX1812 and LC8816E want colour order GRB / GRBW. SM16824E wants RGBW. Its datasheet also puts a 16-bit current-gain word after the last pixel; that word is not sent, so the current stays at whatever the REXT resistor set.'},
     {name: 'TM1908', chips: 'TM1908 RGB pixels (Titan Micro).', rows: [[3, 'RGB pixels (3 bytes)']],
      note: 'Sends a 9-byte setup frame (auto-switch mode and current) at the start of EVERY port, so all ports on this board must be TM1908. Chip current is adjustable (2-25 mA).'},
     {name: 'LPD1886 (8-bit)', chips: 'LPD1886 in 8-bit mode (leave its GM pin floating). The 12-bit mode cannot be driven.', rows: [[3, 'RGB pixels (3 bytes)']], note: ''},
