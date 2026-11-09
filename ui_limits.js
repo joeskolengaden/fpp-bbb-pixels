@@ -33,7 +33,7 @@ var fbpPresets = [
      note: 'TM1934 can also take an optional mode-setting frame at power-up; its bytes are not printed in the datasheet text, so none is sent.'},
     {name: 'UCS2912', chips: 'UCS2912 12-channel RGB driver (4 RGB groups per chip; set 4 pixels per chip as 4 pixels on the port). Needs a longer 0-pulse than Normal.', rows: [[3, 'RGB pixels (3 bytes)']], note: ''},
     {name: 'UCS1912', chips: 'UCS1912 12-channel RGB driver. Needs a longer 1-pulse (1 microsecond) than Normal.', rows: [[3, 'RGB pixels (3 bytes)']], note: ''},
-    {name: 'TX1812 / TX1818 / LC8816E / GS8208B', chips: 'The 0.3 / 0.9 microsecond pixel family: TX1812, TX1818, LC8816E (RGBW, order GRBW), GS8208B, SM16703SP, SM16824E (RGBW).', rows: [[3, 'RGB pixels (3 bytes)'], [4, 'RGBW pixels (4 bytes)']], note: 'TX1812 and LC8816E want colour order GRB / GRBW. SM16824E wants RGBW. Its datasheet also puts a 16-bit current-gain word after the last pixel; that word is not sent, so the current stays at whatever the REXT resistor set.'},
+    {name: 'TX1812 / TX1818 / LC8816E / GS8208B', chips: 'The 0.3 / 0.9 microsecond pixel family: TX1812, TX1818, LC8816E (RGBW, order GRBW), GS8208B, SM16703SP, SM16824E (RGBW).', rows: [[3, 'RGB pixels (3 bytes)'], [4, 'RGBW pixels (4 bytes)']], note: 'TX1812 and LC8816E want colour order GRB / GRBW. SM16824E wants RGBW. Its datasheet also puts a 16-bit current-gain word after the last pixel; that word is not sent, so the current stays at whatever the REXT resistor set. The 0-bit pulse (datasheet 300 ns) has not been measured with a scope and may come out shorter on this board; if a chip misreads, try Custom timing with T0H 350.'},
     {name: 'TM1908', chips: 'TM1908 RGB pixels (Titan Micro).', rows: [[3, 'RGB pixels (3 bytes)']],
      note: 'Sends a 9-byte setup frame (auto-switch mode and current) at the start of EVERY port, so all ports on this board must be TM1908. Chip current is adjustable (2-25 mA).'},
     {name: 'LPD1886 (8-bit)', chips: 'LPD1886 in 8-bit mode (leave its GM pin floating). The 12-bit mode cannot be driven.', rows: [[3, 'RGB pixels (3 bytes)']], note: ''},
@@ -84,7 +84,9 @@ function fbpCustCheck() {
     else if (per < 1000) { msg = 'Bit period under 1000 ns is faster than this board can generate.'; }
     else if (per < t1 + 150) { msg = 'The bit period must be at least 150 ns longer than T1H.'; }
     else if (per > 4000) { msg = 'Bit period over 4000 ns is not supported.'; }
-    $('#fbpCustMsg').text(msg ? '\u26a0 ' + msg : '= ' + Math.round(1e6 / per) / 1000 + ' Mbit/s').css('color', msg ? '#c00' : '');
+    // not an error: this PRU loop cannot make a 0-bit shorter than about 220 ns, and a T0H under ~350 ns (define under 300) lands there instead of where typed
+    var note = (!msg && t0 < 350) ? 'T0H under 350 ns: this board\u2019s 0-bit comes out at about 220 ns or longer, not shorter. Fine for chips that accept a long 0-bit; check the datasheet minimum.' : '';
+    $('#fbpCustMsg').text(msg ? '\u26a0 ' + msg : (note ? '\u24d8 ' + note : '= ' + Math.round(1e6 / per) / 1000 + ' Mbit/s')).css('color', msg ? '#c00' : (note ? '#b36b00' : ''));
     return !msg;
 }
 function fbpHasSm16825e() {

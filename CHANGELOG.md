@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.4 (unreleased)
+Limits panel and documentation only; no timing changed.
+- Custom timing now says so when T0H is under 350 ns: this PRU loop cannot make a 0-bit shorter than about 220 ns, so the pulse comes out longer than typed (not an error, an amber note).
+- Preset 15 (TX1812 / TX1818 / LC8816E / GS8208B / SM16824E) carries the same caveat: its 0.3 us 0-bit has not been checked with a scope and may come out shorter than the datasheet figure.
+- README and CONFIG no longer present the pad-sampler pulse widths in 1.0.1 and 1.0.2 as measurements: the sampler reads in ~200 ns steps, so they are indicative. The idle level and bit period are what it proves.
+- hwtest/stress_ics.py: per-chip stress test that judges the wire (computed wire time, the driver's own LIMIT warning, output really running), replacing an earlier sweep whose "HOLDS" only meant fppd kept its frame rate.
+
 ## 1.0.3 (2026-11-05)
 GS8608 is named on the Normal timing menu. WLED drives it with the WS2812 waveform and notes that the chip shows a test pattern unless data keeps arriving, so the limits card says the same. No new pulse times.
 

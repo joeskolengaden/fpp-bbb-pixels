@@ -134,10 +134,11 @@ swap + stops fppd for the compile, then restores both.
 ## Preamble/trailer notes (TM1814, TM1914, UCS7604, SM16825E)
 - **Inverted waveform** (TM1814/TM1829/TM1914) swaps the PRU's GPIO set/clear
   registers. On a BeagleBone Green the pad idles high for those three presets and
-  low for Normal. TM1814 and TM1914 measured a 0-bit low of 378 ns and 375 ns
-  and a 1-bit low of about 725 ns. TM1829 at `T0_TIME` 310 measured a 0-bit
-  low of 314 ns and a 1-bit low of about 806 ns. Defines under 300 ns collapse
-  to about 220 ns on this PRU, which is why 250 was short.
+  low for Normal. The pad sampler only resolves pulses in ~200 ns steps, so the
+  0-bit / 1-bit low times it reported (about 378 / 725 ns for TM1814 and TM1914,
+  314 / 806 ns for TM1829) are indicative. This PRU loop cannot make a 0-bit
+  shorter than about 220 ns: a short-pulse define under about 300 ns collapses
+  to that, which is why TM1829's 250 was short. Not yet checked with a scope.
 - **Preambles are automatic and per-port-instance, not per-string**: selecting
   Pixel Timing = TM1814/TM1914/UCS7604 prepends the matching config frame to
   **every port on that BBB48String instance** (TM1814: 8 bytes max-current;

@@ -102,11 +102,17 @@ edit the `g` value in `patch_pixelstring.py`'s SM16825E trailer block (search
 for "SAFETY") and reinstall.
 
 The inverted waveform was checked on the BeagleBone's own pad (P8-30), not with
-a scope. Those three presets idle high; Normal idles low. TM1814 and TM1914 at
-`T0_TIME` 330 measured a 0-bit low of 378 ns and 375 ns (datasheet 310–410) and
-a 1-bit low of about 725 ns. TM1829 at `T0_TIME` 310 / `T1_TIME` 750 measured a
-0-bit low of 314 ns and a 1-bit low of about 806 ns (period ~1234 ns). Defines
-under 300 ns collapse to about 220 ns at this bit period, so 250 was short.
+a scope. Those three presets idle high; Normal idles low. The pad sampler reads
+pulse widths in steps of about 200 ns, so the 0-bit / 1-bit low times it gave
+(TM1814 and TM1914 at `T0_TIME` 330: 378 and 375 ns; TM1829 at 310 / 750: 314 ns
+and about 806 ns) are indicative, not a precise measurement. What is solid: the
+idle level and the bit period (~1234-1246 ns). Known limit of this PRU loop:
+a short-pulse define under about 300 ns has already expired when the wait runs,
+so the 0-bit comes out at the minimum the loop can make (about 220 ns). That is
+why 250 was too short for TM1829, and it applies to every preset with a short
+pulse near or under 300 ns (the 0.3 / 0.9 us family on preset 15, preset 18,
+and Custom timing with T0H under 350). A scope or logic analyzer is the way to
+confirm those pulses; none has been used on this project yet.
 
 ## Verify an install
 `sudo bash selftest.sh` — checks the channel maps and every preamble/trailer,
